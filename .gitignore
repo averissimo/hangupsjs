@@ -22,8 +22,10 @@ doc
 
 BrowserStackLocal
 cookies.json
-login.coffee
+Cookies-journal
 jsdom
 refreshtoken.txt
 
 lib
+
+login

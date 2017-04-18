@@ -29,43 +29,31 @@ sendMessage = (conv_id, now = false) ->
 # the id is a conversation id.
 client.connect(creds).then ->
 
-    ids = {
-      'lc': ['<av id number>', '<ja id number>']
-      'av': ['<ja id number>']
-      'ja': ['<av id number']
-    }
+    ids = require('../login/presence.json')
 
-    convs = {
-        'ja': [
-            '<google conv id>' # av
-        ]
-        'av': [
-            '<google conv id>' # ja
-            '<google conv id>' # ja + lmc
-            '<google conv id>' # lmc
-        ]
-        'lc': [
-            '<google conv id>' # av + lmc + ja'
-            '<google conv id>' # av
-        ]
-    }
+    convs = require('../login/conv_id.json')
+    console.log ids
+    console.log convs
+    debugger
 
     client.getselfinfo().done (ev) ->
-        name = ev.self_entity.properties.display_name
+        myId = ev.self_entity.id.chat_id
+        name = "#{ev.self_entity.properties.display_name} (#{myId})"
         console.log ''
         console.log "#########{[1..name.length].map(()->'#').join('')}#######"
         console.log "#             #{[1..name.length].map(()->' ').join('')}#"
         console.log "#   I am #{name}!!   #"
         console.log "#             #{[1..name.length].map(()->' ').join('')}#"
         console.log "################{[1..name.length].map(()->'#').join('')}"
+
         first = true
-        for chat_id in ids[name]
+        for chat_id in ids[myId]
             client.querypresence(chat_id).done (r) ->
                 console.log '\n\n\n'
                 console.log 'r[0] ', r.presence_result[0]
                 console.log '\n\n\n'
 
-        for conv_id in convs[name]
+        for conv_id in convs[myId]
             sendMessage(conv_id, first)
             first = false
             client.getconversation(conv_id, new Date(), 1, true).done (args) ->
@@ -75,4 +63,3 @@ client.connect(creds).then ->
     console.log('sync', client.syncrecentconversations())
 
 .done()
-

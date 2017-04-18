@@ -5,6 +5,9 @@ coffee     = require 'gulp-coffee'
 sourcemaps = require 'gulp-sourcemaps'
 
 nodemon    = require 'gulp-nodemon'
+
+fs         = require('fs')
+path       = require('path')
 #nodeInspector = require 'node-insector' # required to have installed, not used
 # compile coffeescript
 gulp.task 'coffee', ->
@@ -24,7 +27,7 @@ makeTask = (name) ->
     .then (paths) ->
       console.log 'INFO: Deleted paths:\n  - ', paths.join('\n  - ')
     .then () ->
-      gulp.src path.join __dirname, name, '*'
+      gulp.src path.join __dirname, 'login', name, '*'
         .pipe gulp.dest(__dirname)
       .on 'end', () ->
         nodemon {
@@ -38,7 +41,20 @@ makeTask = (name) ->
         .on('start',[''])
         #require('./lib/login.js')
 
-for el in ['av', 'jma', 'lmc']
+getDirectories = (srcPath = path.resolve(__dirname, 'login')) ->
+  fs.readdirSync(srcPath).filter (file) ->
+    fs.statSync(path.resolve(srcPath, file)).isDirectory()
+
+for el in getDirectories()
   makeTask(el)
 
-gulp.task 'default', ['jma']
+gulp.task 'default', ['coffee'], () ->
+  #
+  nodemon {
+    exec: 'inspect'
+    ext: 'coffee'
+    watch: './src/*'
+    script: './lib/login.js'
+    verbose: true
+    tasks: ['coffee']
+  }
