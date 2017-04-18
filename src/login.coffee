@@ -29,13 +29,6 @@ sendMessage = (conv_id, now = false) ->
 # the id is a conversation id.
 client.connect(creds).then ->
 
-    ids = require('../login/presence.json')
-
-    convs = require('../login/conv_id.json')
-    console.log ids
-    console.log convs
-    debugger
-
     client.getselfinfo().done (ev) ->
         myId = ev.self_entity.id.chat_id
         name = "#{ev.self_entity.properties.display_name} (#{myId})"
@@ -46,19 +39,42 @@ client.connect(creds).then ->
         console.log "#             #{[1..name.length].map(()->' ').join('')}#"
         console.log "################{[1..name.length].map(()->'#').join('')}"
 
-        first = true
-        for chat_id in ids[myId]
-            client.querypresence(chat_id).done (r) ->
-                console.log '\n\n\n'
-                console.log 'r[0] ', r.presence_result[0]
-                console.log '\n\n\n'
+        try
+          ids = require('../login/presence.json')
 
-        for conv_id in convs[myId]
-            sendMessage(conv_id, first)
-            first = false
-            client.getconversation(conv_id, new Date(), 1, true).done (args) ->
-                console.log 'read state', args.conversation_state.conversation.read_state
-                console.log 'events: ', args.conversation_state.event.length
+          console.log 'ids', ids
+
+          for chat_id in ids[myId]
+              client.querypresence(chat_id).done (r) ->
+                  console.log '\n\n\n'
+                  console.log 'r[0] ', r.presence_result[0]
+                  console.log '\n\n\n'
+
+        catch
+          console.log ''
+          console.log 'ERROR:'
+          console.log '  login/presence.json is not correctly set'
+          console.log '  will not check for user presence'
+          console.log ''
+
+        try
+          convs = require('../login/conv_id.json')
+          console.log 'convs', convs
+
+          first = true
+          for conv_id in convs[myId]
+              sendMessage(conv_id, first)
+              first = false
+              client.getconversation(conv_id, new Date(), 1, true).done (args) ->
+                  console.log 'read state', args.conversation_state.conversation.read_state
+                  console.log 'events: ', args.conversation_state.event.length
+
+        catch
+          console.log ''
+          console.log 'ERROR:'
+          console.log '  login/conv_id.json is not correctly set'
+          console.log '  will not send messages'
+          console.log ''
 
     console.log('sync', client.syncrecentconversations())
 
