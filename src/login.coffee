@@ -50,6 +50,12 @@ client.connect(creds).then ->
                   console.log 'r[0] ', r.presence_result[0]
                   console.log '\n\n\n'
 
+          chatIdArray = String(chat_id) for chat_id in ids[myId]
+          client.getentitybyid([chatIdArray]).done (r) ->
+              console.log '\n\n\n'
+              console.log 'entity ', r.entities
+              console.log '\n\n\n'
+
         catch
           console.log ''
           console.log 'ERROR:'
